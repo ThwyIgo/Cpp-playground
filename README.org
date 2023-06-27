@@ -1,0 +1,11 @@
+#+title: README
+
+* Data Structures
+** Graph
+graph.hpp implements a weighted, directed graph. It uses modern features like:
+- ~std::optional~
+- ~std::shared_ptr~
+- [[https://en.cppreference.com/w/cpp/language/structured_binding][Structured binding]]
+
+** Heap
+heap.hpp implemensts a heap (max by default) which can be heapified at any time by calling heapify().
