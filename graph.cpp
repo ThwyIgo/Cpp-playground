@@ -114,12 +114,13 @@ public:
 
     // O(v * e) : v = vertices : e = edges
     dijkstra_t dijkstra(T origin) const {
-        // (*pprev)[v] == previous vertex of v in the path
+        /* (*pprev)[v] == previous vertex of v in the path.
+           if (*pprev)[v].has_value() == false, then v is the origin */
         auto pprev = std::make_shared<std::unordered_map<T,std::optional<T>>>();
         auto &prev = *pprev;
         prev.reserve(verts.size());
         heap_min heapMin;
-        // dist[v] == distance from origin to v
+        // *dist[v] == distance from origin to v
         std::unordered_map<T, std::shared_ptr<W>> dist;
         dist.reserve(verts.size());
 
@@ -150,17 +151,25 @@ public:
             }
         }
 
-        auto distNoPrt = std::make_shared<std::unordered_map<T, W>>();
-        (*distNoPrt).reserve(dist.size());
-        for (auto [v,pw] : dist)
-            (*distNoPrt)[v] = *pw;
+        auto distNoPtr = std::make_shared<std::unordered_map<T, W>>();
+        (*distNoPtr).reserve(dist.size());
+        for (auto &[v,pw] : dist) {
+            (*distNoPtr)[v] = *pw;
+            pw = nullptr; // free memory
+        }
         
-        return {distNoPrt, pprev};
+        return {distNoPtr, pprev};
     }
 
     static void printPrevPath(const dijkstra_t &shortestPathTree, T destination) {
-        h_printPrevPath(*shortestPathTree.second, destination);
-        std::cout << destination << std::endl;
+        const auto &[_,prevopt] = *(*shortestPathTree.second).find(destination);
+
+        if (prevopt.has_value()) {
+            printPrevPath(shortestPathTree, prevopt.value());
+            std::cout << " -> ";
+        }
+
+        std::cout << destination;
     }
 
     static void printShortestDistances(const dijkstra_t &shortestPathTree) {
@@ -181,16 +190,6 @@ private:
     auto static eqEdge(const T &destination) {
         return [&](const std::pair<T,W> &pair)
             {return pair.first == destination;};
-    }
-
-    static void h_printPrevPath(const std::unordered_map<T,std::optional<T>> &prev, T destination) {
-        const auto &[_,prevopt] = (*prev.find(destination));
-        
-        if (!prevopt.has_value())
-            return;
-
-        h_printPrevPath(prev, prevopt.value());
-        std::cout << prevopt.value() << " -> ";
     }
 
 public: // Debug, will be deleted
