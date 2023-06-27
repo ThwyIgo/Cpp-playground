@@ -2,49 +2,23 @@
 #error "C++20 is required to compile this code"
 #endif
 
+#ifndef GRAPH_NO_IO
 #include <iostream>
+#endif // GRAPH_NO_IO
+
 #include <algorithm>
-#include <initializer_list>
-#include <optional>
-#include <limits>
 #include <memory>
+#include <limits>
 
-// Data structures
-#include <string>
-#include <forward_list>
+#include "heap.hpp"
+#include <optional>
 #include <unordered_map>
-#include <vector>
+#include <forward_list>
 
-template<typename T, auto cmpfunc>
-class Heap {
-    std::vector<T> data;
-
-public:
-    void push(T x) {
-        data.push_back(x);
-        std::push_heap(data.begin(), data.end(), cmpfunc);
-    }
-
-    T pop(void) {
-        std::pop_heap(data.begin(), data.end(), cmpfunc);
-        T ret = data.back();
-        data.pop_back();
-        return ret;
-    }
-
-    void heapify(void) {
-        std::make_heap(data.begin(), data.end(), cmpfunc);
-    }
-
-    bool empty(void) const {
-        return data.empty();
-    }
-};
-
-// Value, Weight
+//            Value, Weight
 template<typename T, typename W>
 class Graph {
-    using heap_min = Heap<std::pair<T,std::shared_ptr<W>>,
+    using heap_min = heap<std::pair<T,std::shared_ptr<W>>,
         [](auto a, auto b) {
             return (*a.second > *b.second);
         }>;
@@ -161,6 +135,7 @@ public:
         return {distNoPtr, pprev};
     }
 
+#ifndef GRAPH_NO_IO
     static void printPrevPath(const dijkstra_t &shortestPathTree, T destination) {
         const auto &[_,prevopt] = *(*shortestPathTree.second).find(destination);
 
@@ -180,6 +155,16 @@ public:
         }
     }
 
+    void print(void) const {
+        for (auto &[k,l] : verts) {
+            std::cout << k << " -> ";
+            for (auto &[v,w] : l)
+                std::cout << ", " << v << '/' << w;
+            std::cout << '\n';
+        }
+    }
+#endif // GRAPH_NO_IO
+
     constexpr static W infinity(void) {
         if (std::numeric_limits<W>::has_infinity)
             return std::numeric_limits<W>::infinity();
@@ -191,60 +176,4 @@ private:
         return [&](const std::pair<T,W> &pair)
             {return pair.first == destination;};
     }
-
-public: // Debug, will be deleted
-    void print(void) const {
-        for (auto &[k,l] : verts) {
-            std::cout << k << " -> ";
-            for (auto &[v,w] : l)
-                std::cout << ", " << v << '/' << w;
-            std::cout << '\n';
-        }
-    }
 };
-
-int main(void)
-{
-    using namespace std;
-    
-    Graph<string, unsigned int> meuGrafo = {
-        {"Udia", {
-                {"Udia", 0},
-                {"Araguari", 30},
-                {"Beraba", 60},
-                {"Cuiaba", 1200},
-                {"Brasilia", 700}
-            }
-        },
-        {"Araguari", {
-                {"Udia", 30},
-                {"Beraba", 40},
-                {"Brasilia", 100}
-            }
-        },
-        {"Brasilia", {
-                {"Cuiaba", 400},
-                {"Cavalcante", 100}
-            }
-        }
-    };
-
-    auto udiaShortestPathTree = meuGrafo.dijkstra("Udia");
-    cout << "Distances from Udia:\n";
-    meuGrafo.printShortestDistances(udiaShortestPathTree);
-
-    cout << "\nPath to Brasilia\n";
-    meuGrafo.printPrevPath(udiaShortestPathTree, "Brasilia");
-
-    cout << "\nVert count: " << meuGrafo.size() << '\n';
-    meuGrafo.print();
-
-    cout << "\nRemoving Beraba from Udia and adding Araguari to Beraba\n";
-    meuGrafo.removeEdge("Udia", "Beraba");
-    meuGrafo.addEdge("Beraba", "Araguari", 40, true);
-    meuGrafo.print();
-    
-    cout << "\nChanging an element\n";
-    meuGrafo.getPairRef("Brasilia", "Cuiaba").first = "Belzonte";
-    meuGrafo.print();
-}
