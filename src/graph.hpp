@@ -76,16 +76,11 @@ public:
     }
 
     // O(n) : n = origin's adjacent vertices
-    auto& getPairRef(T origin, T destination) {
-        return *std::find_if(verts[origin].begin(), verts[origin].end(),
-                             eqEdge(destination));
+    std::pair<T,W>* getEdgePtr(T origin, T destination) {
+        return &*std::find_if(verts[origin].begin(), verts[origin].end(),
+                              eqEdge(destination));
     }
     
-    // O(1)
-    size_t size(void) const {
-        return verts.size();
-    }
-
     // O(v * e) : v = vertices : e = edges
     dijkstra_t dijkstra(T origin) const {
         /* (*pprev)[v] == previous vertex of v in the path.

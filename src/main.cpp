@@ -35,15 +35,12 @@ int main(void)
     cout << "\nPath to Brasilia\n";
     meuGrafo.printPrevPath(udiaShortestPathTree, "Brasilia");
 
-    cout << "\nVert count: " << meuGrafo.size() << '\n';
-    meuGrafo.print();
-
     cout << "\nRemoving Beraba from Udia and adding Araguari to Beraba\n";
     meuGrafo.removeEdge("Udia", "Beraba");
     meuGrafo.addEdge("Beraba", "Araguari", 40, true);
     meuGrafo.print();
     
     cout << "\nChanging an element\n";
-    meuGrafo.getPairRef("Brasilia", "Cuiaba").first = "Belzonte";
+    meuGrafo.getEdgePtr("Brasilia", "Cuiaba")->first = "Belzonte";
     meuGrafo.print();
 }
