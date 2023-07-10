@@ -1,3 +1,4 @@
+#pragma once
 #if __cplusplus < 202002L
 #error "C++20 is required to compile this code"
 #endif
