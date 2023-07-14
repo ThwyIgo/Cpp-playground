@@ -1,7 +1,4 @@
 #pragma once
-#if __cplusplus < 202002L
-#error "C++20 is required to compile this code"
-#endif
 
 #ifndef GRAPH_NO_IO
 #include <iostream>
@@ -10,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <limits>
+#include "infinity.hpp"
 
 #include "heap.hpp"
 #include <optional>
@@ -19,21 +17,23 @@
 //            Value, Weight
 template<typename T, typename W>
 class Graph {
-    using heap_min = heap<std::pair<T,std::shared_ptr<W>>,
+    typedef inf<W> Winf;
+
+    using heap_min = heap<std::pair<T,std::shared_ptr<Winf>>,
         [](auto a, auto b) {
             return (*a.second > *b.second);
         }>;
-
-    typedef std::pair<std::shared_ptr<std::unordered_map<
-                                          T, W>>,
-                      std::shared_ptr<std::unordered_map<
-                                          T,std::optional<T>>>
-                      > dijkstra_t;
         
     // The only attribute of this class
     std::unordered_map<T, std::forward_list<std::pair<T, W>>> verts;
 
 public:
+    typedef std::pair<std::shared_ptr<std::unordered_map<
+                                          T, Winf>>,
+                      std::shared_ptr<std::unordered_map<
+                                          T,std::optional<T>>>
+                      > dijkstra_t;
+
     Graph(void) {}
 
     explicit Graph(size_t reserve) {
@@ -91,17 +91,17 @@ public:
         prev.reserve(verts.size());
         heap_min heapMin;
         // *dist[v] == distance from origin to v
-        std::unordered_map<T, std::shared_ptr<W>> dist;
+        std::unordered_map<T, std::shared_ptr<Winf>> dist;
         dist.reserve(verts.size());
 
         for (const auto &[v,_] : verts) {
             if (v != origin) {
-                dist[v] = std::make_shared<W>(infinity());
+                dist[v] = std::make_shared<Winf>(Winf());
                 heapMin.push({v, dist[v]});
             }
             prev[v] = std::nullopt;
         }
-        dist[origin] = std::make_shared<W>(0);
+        dist[origin] = std::make_shared<Winf>(0);
         heapMin.push({origin, dist[origin]});
 
         while (!heapMin.empty()) {
@@ -109,10 +109,10 @@ public:
             const auto &[_,adjVerts] = *verts.find(u);
 
             for (auto &[v,w] : adjVerts) {
-                W tempDist = *uw + w;
+                Winf tempDist = *uw + w;
 
                 if (dist[v] == nullptr)
-                    dist[v] = std::make_shared<W>(infinity());
+                    dist[v] = std::make_shared<Winf>(Winf());
                 if (tempDist < *dist[v]) {
                     *dist[v] = tempDist;
                     prev[v] = std::optional<T>(u);
@@ -121,7 +121,7 @@ public:
             }
         }
 
-        auto distNoPtr = std::make_shared<std::unordered_map<T, W>>();
+        auto distNoPtr = std::make_shared<std::unordered_map<T, Winf>>();
         (*distNoPtr).reserve(dist.size());
         for (auto &[v,pw] : dist) {
             (*distNoPtr)[v] = *pw;
@@ -160,12 +160,6 @@ public:
         }
     }
 #endif // GRAPH_NO_IO
-
-    constexpr static W infinity(void) {
-        if (std::numeric_limits<W>::has_infinity)
-            return std::numeric_limits<W>::infinity();
-        return std::numeric_limits<W>::max();
-    }
     
 private:    
     auto static eqEdge(const T &destination) {
