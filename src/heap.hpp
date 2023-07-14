@@ -3,35 +3,50 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <stdexcept>
 
-template<typename T, bool(*Compare)(const T&, const T&) = std::less<>()>
+template<typename T, bool (*Compare)(const T&, const T&) = std::less<T>()>
 class heap {
+private:
     std::vector<T> data;
 
 public:
-    heap(void) {}
-
-    constexpr heap(std::vector<T> vec) : data(vec) {
+    heap() = default;
+    heap(std::vector<T> data) : data(data) {
         heapify();
     }
-    
-    void push(T x) {
-        data.push_back(x);
+
+    void push(T value) {
+        data.push_back(value);
         std::push_heap(data.begin(), data.end(), Compare);
     }
 
-    T pop(void) {
+    T pop() {
+        if (data.size() == 0) 
+            throw std::runtime_error("Heap is empty");
+
         std::pop_heap(data.begin(), data.end(), Compare);
-        T ret = data.back();
+        T top = data.back();
         data.pop_back();
-        return ret;
+        return top;
     }
 
-    void heapify(void) {
+    T top() const {
+        if (data.size() == 0) 
+            throw std::runtime_error("Heap is empty");
+
+        return data.front();
+    }
+
+    void heapify() {
         std::make_heap(data.begin(), data.end(), Compare);
     }
 
-    bool empty(void) const {
+    int size() const noexcept {
+        return data.size();
+    }
+
+    bool empty() const noexcept {
         return data.empty();
     }
 };
