@@ -5,17 +5,17 @@
 #endif // GRAPH_NO_IO
 
 #include <algorithm>
-#include <memory>
 #include <limits>
 #include "infinity.hpp"
+#include "concepts.hpp"
 
 #include "heap.hpp"
 #include <optional>
 #include <unordered_map>
 #include <forward_list>
 
-//            Value, Weight
-template<typename T, typename W>
+//                 Value               Weight
+template<std::equality_comparable T, typename W>
 class Graph {
     typedef inf<W> Winf;
 
@@ -76,13 +76,15 @@ public:
     }
 
     // O(n) : n = origin's adjacent vertices
+    [[nodiscard]]
     std::pair<T,W>* getEdgePtr(T origin, T destination) {
         return &*std::find_if(verts[origin].begin(), verts[origin].end(),
                               eqEdge(destination));
     }
     
     // O(v * e) : v = vertices : e = edges
-    dijkstra_t dijkstra(T origin) const {
+    [[nodiscard]]
+    dijkstra_t dijkstra(T origin) const requires Arithmetic<W> && std::totally_ordered<W> {
         heap_min heapMin;
         /* (*pprev)[v] == previous vertex of v in the path.
            if (*pprev)[v].has_value() == false, then v is the origin */

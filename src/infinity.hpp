@@ -3,6 +3,7 @@
 #include <limits>
 #include <ostream>
 #include <stdexcept>
+#include "concepts.hpp"
 
 /* Wrapper class to implement infinity to any type.
  * Doesn't support negative infinity.
@@ -36,13 +37,13 @@ public:
 
     // Arithmetic operators
 
-    friend inf operator+(const inf& lhs, const inf& rhs) {
+    friend inf operator+(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf || rhs.isInf)
             return inf();
         return inf(lhs.value + rhs.value);
     }
 
-    friend inf operator-(const inf& lhs, const inf& rhs) {
+    friend inf operator-(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf && rhs.isInf)
             throw std::logic_error("infinity minus infinity");
 
@@ -51,13 +52,13 @@ public:
         return inf(lhs.value - rhs.value);
     }
 
-    friend inf operator*(const inf& lhs, const inf& rhs) {
+    friend inf operator*(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf || rhs.isInf)
             return inf();
         return inf(lhs.value * rhs.value);
     }
 
-    friend inf operator/(const inf& lhs, const inf& rhs) {
+    friend inf operator/(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf && rhs.isInf)
             throw std::logic_error("infinity divided by infinity");
 
@@ -94,7 +95,7 @@ public:
 
     // Comparison operators
 
-    friend bool operator==(const inf& lhs, const inf& rhs) {
+    friend bool operator==(const inf& lhs, const inf& rhs) requires std::equality_comparable<T> {
         if (lhs.isInf && rhs.isInf)
             return true;
         if (lhs.isInf || rhs.isInf)
@@ -106,7 +107,7 @@ public:
         return !(lhs == rhs);
     }
 
-    friend bool operator<(const inf& lhs, const inf& rhs) {
+    friend bool operator<(const inf& lhs, const inf& rhs) requires std::totally_ordered<T> {
         if (lhs.isInf)
             return false;
         if (!lhs.isInf && rhs.isInf)
