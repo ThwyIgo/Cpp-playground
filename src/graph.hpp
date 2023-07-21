@@ -19,7 +19,7 @@ template<typename T, typename W>
 class Graph {
     typedef inf<W> Winf;
 
-    using heap_min = heap<std::pair<T,std::shared_ptr<Winf>>,
+    using heap_min = heap<std::pair<T,Winf*>,
         [](auto a, auto b) {
             return (*a.second > *b.second);
         }>;
@@ -28,14 +28,13 @@ class Graph {
     std::unordered_map<T, std::forward_list<std::pair<T, W>>> verts;
 
 public:
-    typedef std::pair<std::shared_ptr<std::unordered_map<
-                                          T, Winf>>,
-                      std::shared_ptr<std::unordered_map<
-                                          T,std::optional<T>>>
+    typedef std::pair<std::unordered_map<
+                          T, Winf>,
+                      std::unordered_map<
+                          T, std::optional<T>>
                       > dijkstra_t;
 
-    Graph(void) {}
-
+    Graph() = default;
     explicit Graph(size_t reserve) {
         verts.reserve(reserve);
     }
@@ -84,25 +83,22 @@ public:
     
     // O(v * e) : v = vertices : e = edges
     dijkstra_t dijkstra(T origin) const {
+        heap_min heapMin;
         /* (*pprev)[v] == previous vertex of v in the path.
            if (*pprev)[v].has_value() == false, then v is the origin */
-        auto pprev = std::make_shared<std::unordered_map<T,std::optional<T>>>();
-        auto &prev = *pprev;
-        prev.reserve(verts.size());
-        heap_min heapMin;
-        // *dist[v] == distance from origin to v
-        std::unordered_map<T, std::shared_ptr<Winf>> dist;
-        dist.reserve(verts.size());
+        std::unordered_map<T,std::optional<T>> prev;
+        // dist[v] == distance from origin to v
+        std::unordered_map<T, Winf> dist;
 
         for (const auto &[v,_] : verts) {
             if (v != origin) {
-                dist[v] = std::make_shared<Winf>(Winf());
-                heapMin.push({v, dist[v]});
+                dist[v] = Winf();
+                heapMin.push({v, &dist[v]});
             }
             prev[v] = std::nullopt;
         }
-        dist[origin] = std::make_shared<Winf>(0);
-        heapMin.push({origin, dist[origin]});
+        dist[origin] = Winf(0);
+        heapMin.push({origin, &dist[origin]});
 
         while (!heapMin.empty()) {
             const auto [u,uw] = heapMin.pop();
@@ -111,29 +107,20 @@ public:
             for (auto &[v,w] : adjVerts) {
                 Winf tempDist = *uw + w;
 
-                if (dist[v] == nullptr)
-                    dist[v] = std::make_shared<Winf>(Winf());
-                if (tempDist < *dist[v]) {
-                    *dist[v] = tempDist;
+                if (tempDist < dist[v]) {
+                    dist[v] = tempDist;
                     prev[v] = std::optional<T>(u);
                     heapMin.heapify();
                 }
             }
         }
 
-        auto distNoPtr = std::make_shared<std::unordered_map<T, Winf>>();
-        (*distNoPtr).reserve(dist.size());
-        for (auto &[v,pw] : dist) {
-            (*distNoPtr)[v] = *pw;
-            pw = nullptr; // free memory
-        }
-        
-        return {distNoPtr, pprev};
+        return {dist, prev};
     }
 
 #ifndef GRAPH_NO_IO
     static void printPrevPath(const dijkstra_t &shortestPathTree, T destination) {
-        const auto &[_,prevopt] = *(*shortestPathTree.second).find(destination);
+        const auto &[_,prevopt] = *shortestPathTree.second.find(destination);
 
         if (prevopt.has_value()) {
             printPrevPath(shortestPathTree, prevopt.value());
@@ -144,14 +131,14 @@ public:
     }
 
     static void printShortestDistances(const dijkstra_t &shortestPathTree) {
-        const auto dist = *shortestPathTree.first;
+        const auto dist = shortestPathTree.first;
         
         for (auto &[v,w] : dist) {
             std::cout << v << '/' << w << '\n';
         }
     }
 
-    void print(void) const {
+    void print() const {
         for (auto &[k,l] : verts) {
             std::cout << k << " -> ";
             for (auto &[v,w] : l)
