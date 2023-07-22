@@ -4,8 +4,11 @@
 #include <algorithm>
 #include <functional>
 #include <stdexcept>
+#include <functional>
+#include "concepts.hpp"
 
-template<typename T, bool (*Compare)(const T&, const T&) = std::less<T>()>
+template<typename T, auto Compare = std::less<T>()>
+requires CompareFunction<decltype(Compare), T>
 class heap {
 private:
     std::vector<T> data;
@@ -22,7 +25,7 @@ public:
     }
 
     T pop() {
-        if (data.size() == 0) 
+        if (data.size() == 0)
             throw std::runtime_error("Heap is empty");
 
         std::pop_heap(data.begin(), data.end(), Compare);
@@ -32,7 +35,7 @@ public:
     }
 
     T top() const {
-        if (data.size() == 0) 
+        if (data.size() == 0)
             throw std::runtime_error("Heap is empty");
 
         return data.front();

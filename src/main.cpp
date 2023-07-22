@@ -5,7 +5,7 @@
 int main(void)
 {
     using namespace std;
-    
+
     Graph<string, unsigned int> meuGrafo = {
         {"Udia", {
                 {"Udia", 0},
@@ -39,7 +39,7 @@ int main(void)
     meuGrafo.removeEdge("Udia", "Beraba");
     meuGrafo.addEdge("Beraba", "Araguari", 40, true);
     meuGrafo.print();
-    
+
     cout << "\nChanging an element\n";
     meuGrafo.getEdgePtr("Brasilia", "Cuiaba")->first = "Belzonte";
     meuGrafo.print();

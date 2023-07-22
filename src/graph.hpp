@@ -19,11 +19,12 @@ template<std::equality_comparable T, typename W>
 class Graph {
     typedef inf<W> Winf;
 
-    using heap_min = heap<std::pair<T,Winf*>,
-        [](auto a, auto b) {
-            return (*a.second > *b.second);
-        }>;
-        
+    static bool heapCmp(std::pair<T,Winf*> a, std::pair<T,Winf*> b) {
+        return (*a.second > *b.second);
+    }
+
+    using heap_min = heap<std::pair<T,Winf*>, heapCmp>;
+
     // The only attribute of this class
     std::unordered_map<T, std::forward_list<std::pair<T, W>>> verts;
 
@@ -55,7 +56,7 @@ public:
                          eqEdge(destination))
             != list.end())
             return false;
-        
+
         list.push_front({destination, weight});
         return true;
     }
@@ -64,7 +65,7 @@ public:
     bool addEdge(T origin, T destination, W weight, bool iSwearThisIsntDuplicate) {
         if (iSwearThisIsntDuplicate == false)
             return addEdge(origin, destination, weight);
-        
+
         verts[origin].push_front({destination, weight});
         return true;
     }
@@ -81,7 +82,7 @@ public:
         return &*std::find_if(verts[origin].begin(), verts[origin].end(),
                               eqEdge(destination));
     }
-    
+
     // O(v * e) : v = vertices : e = edges
     [[nodiscard]]
     dijkstra_t dijkstra(T origin) const requires Arithmetic<W> && std::totally_ordered<W> {
@@ -134,7 +135,7 @@ public:
 
     static void printShortestDistances(const dijkstra_t &shortestPathTree) {
         const auto dist = shortestPathTree.first;
-        
+
         for (auto &[v,w] : dist) {
             std::cout << v << '/' << w << '\n';
         }
@@ -149,8 +150,8 @@ public:
         }
     }
 #endif // GRAPH_NO_IO
-    
-private:    
+
+private:
     auto static eqEdge(const T &destination) {
         return [&](const std::pair<T,W> &pair)
             {return pair.first == destination;};
