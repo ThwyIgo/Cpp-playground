@@ -5,6 +5,7 @@
 int main(void)
 {
     using namespace std;
+    cout.setf(ios::boolalpha);
 
     Graph<string, unsigned int> meuGrafo = {
         {"Udia", {
@@ -28,6 +29,13 @@ int main(void)
         }
     };
 
+    meuGrafo.addVert("Maceio");
+    cout << meuGrafo.contains("Maceio") << '\n';
+    cout << meuGrafo.contains("Araguari", "Udia") << '\n';
+    meuGrafo.print();
+    cout << meuGrafo.size() << '\n';
+    meuGrafo.removeVert("Maceio");
+
     auto udiaShortestPathTree = meuGrafo.dijkstra("Udia");
     cout << "Distances from Udia:\n";
     meuGrafo.printShortestDistances(udiaShortestPathTree);
@@ -40,7 +48,9 @@ int main(void)
     meuGrafo.addEdge("Beraba", "Araguari", 40, true);
     meuGrafo.print();
 
-    cout << "\nChanging an element\n";
+    cout << "\nChanging an element (doesn't change the vertex 'globally')\n";
     meuGrafo.getEdgePtr("Brasilia", "Cuiaba")->first = "Belzonte";
     meuGrafo.print();
+
+    cout << "\nIf you want to change all vertices easily, use a pointer as the type T of the Graph\n";
 }

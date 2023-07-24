@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #ifndef GRAPH_NO_IO
 #include <iostream>
 #endif // GRAPH_NO_IO
@@ -40,37 +41,57 @@ public:
         verts.reserve(reserve);
     }
 
-    // O(n) : n = edges
+    // O(e) : e = edges
     // Doesn't check if edges are duplicated
     constexpr Graph(std::initializer_list<std::pair<T,std::initializer_list<std::pair<T,W>>>> il) {
-        verts.reserve(il.size());
         for (auto [k,v] : il)
-            for (auto p : v)
-                verts[k].push_front(p);
+            for (auto [d,w] : v)
+                addEdge(k, d, w, true);
     }
 
-    // O(n) : n = edges
+    // O(1)
+    size_t size() const {
+        return verts.size();
+    }
+
+    // O(1)
+    void addVert(T vert) {
+        verts[vert];
+    }
+
+    // O(e) : e = edges
+    void removeVert(T vert) {
+        verts.erase(vert);
+        for (auto& [origin,_] : verts)
+            removeEdge(origin, vert);
+    }
+
+    // Vertices are created automatically
+    // O(e) : e = edges
     bool addEdge(T origin, T destination, W weight) {
-        auto &list = verts[origin];
-        if (std::find_if(list.begin(), list.end(),
+        addVert(destination);
+        auto &adjList = verts[origin];
+        if (std::find_if(adjList.begin(), adjList.end(),
                          eqEdge(destination))
-            != list.end())
+            != adjList.end())
             return false;
 
-        list.push_front({destination, weight});
+        adjList.push_front({destination, weight});
         return true;
     }
 
+    // Vertices are created automatically
     // O(1)
     bool addEdge(T origin, T destination, W weight, bool iSwearThisIsntDuplicate) {
         if (iSwearThisIsntDuplicate == false)
             return addEdge(origin, destination, weight);
 
+        addVert(destination);
         verts[origin].push_front({destination, weight});
         return true;
     }
 
-    // O(n)
+    // O(n) : n = origin's adjacent vertices
     bool removeEdge(T origin, T destination) {
         return std::erase_if(verts[origin],
                              eqEdge(destination));
@@ -79,8 +100,32 @@ public:
     // O(n) : n = origin's adjacent vertices
     [[nodiscard]]
     std::pair<T,W>* getEdgePtr(T origin, T destination) {
-        return &*std::find_if(verts[origin].begin(), verts[origin].end(),
-                              eqEdge(destination));
+        if (!contains(origin))
+            throw std::runtime_error("Edge's origin not found");
+
+        auto& [_,adjList] = *verts.find(origin);
+        auto it = std::find_if(adjList.begin(), adjList.end(),
+                               eqEdge(destination));
+        if (it == adjList.end())
+            throw std::runtime_error("Edge not found");
+
+        return &*it;
+    }
+
+    bool contains(T vert) const {
+        return verts.contains(vert);
+    }
+
+    bool contains(T origin, T destination) const {
+        if (!contains(origin))
+            return false;
+
+        auto [_,adjList] = *verts.find(origin);
+        if (std::find_if(adjList.begin(), adjList.end(),
+                         eqEdge(destination)) == adjList.end())
+            return false;
+
+        return true;
     }
 
     // O(v * e) : v = vertices : e = edges
