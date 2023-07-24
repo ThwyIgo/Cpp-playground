@@ -2,32 +2,19 @@
 #include <string>
 #include "graph.hpp"
 
-int main(void)
-{
+int main(void) {
     using namespace std;
     cout.setf(ios::boolalpha);
 
     Graph<string, unsigned int> meuGrafo = {
-        {"Udia", {
-                {"Udia", 0},
-                {"Araguari", 30},
-                {"Beraba", 60},
-                {"Cuiaba", 1200},
-                {"Brasilia", 700}
-            }
-        },
-        {"Araguari", {
-                {"Udia", 30},
-                {"Beraba", 40},
-                {"Brasilia", 100}
-            }
-        },
-        {"Brasilia", {
-                {"Cuiaba", 400},
-                {"Cavalcante", 100}
-            }
-        }
-    };
+        {"Udia",
+         {{"Udia", 0},
+          {"Araguari", 30},
+          {"Beraba", 60},
+          {"Cuiaba", 1200},
+          {"Brasilia", 700}}},
+        {"Araguari", {{"Udia", 30}, {"Beraba", 40}, {"Brasilia", 100}}},
+        {"Brasilia", {{"Cuiaba", 400}, {"Cavalcante", 100}}}};
 
     meuGrafo.addVert("Maceio");
     cout << meuGrafo.contains("Maceio") << '\n';
@@ -52,5 +39,6 @@ int main(void)
     meuGrafo.getEdgePtr("Brasilia", "Cuiaba")->first = "Belzonte";
     meuGrafo.print();
 
-    cout << "\nIf you want to change all vertices easily, use a pointer as the type T of the Graph\n";
+    cout << "\nIf you want to change all vertices easily, use a pointer as the "
+            "type T of the Graph\n";
 }

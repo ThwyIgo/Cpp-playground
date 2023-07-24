@@ -1,11 +1,19 @@
 #+title: README
 
 * Data Structures
+
 ** Graph
-graph.hpp implements a weighted, directed graph. It uses modern features like:
+Weighted directed generic graph. It is implemented in a simple way without
+(explicit) heap allocations and uses modern features like:
 - ~std::optional~
-- ~std::shared_ptr~
+- Concepts
 - [[https://en.cppreference.com/w/cpp/language/structured_binding][Structured binding]]
 
 ** Heap
-heap.hpp implemensts a heap (max by default) which can be heapified at any time by calling heapify().
+Heap which can be heapified at any moment by calling heapify(). It is a max-heap
+by default.
+
+* Typeclasses
+
+** Infinity
+Add an infinity value to any type!

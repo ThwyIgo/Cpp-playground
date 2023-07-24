@@ -6,21 +6,18 @@
 #include "concepts.hpp"
 
 /* Wrapper class to implement infinity to any type.
- * Doesn't support negative infinity.
- */
+ * Doesn't support negative infinity. */
 template <typename T>
 class inf {
-private:
+  private:
     T value = {};
     bool isInf = true;
 
-public:
+  public:
     inf() = default;
     inf(T value) : value(value), isInf(false) {}
 
-    bool isInfinity() const noexcept {
-        return isInf;
-    }
+    bool isInfinity() const noexcept { return isInf; }
 
     explicit operator T() const {
         if (!isInf)
@@ -31,19 +28,19 @@ public:
         throw std::logic_error("Cannot convert infinity to a value");
     }
 
-    T getValue() const {
-        return (T)(*this);
-    }
+    T getValue() const { return (T)(*this); }
 
     // Arithmetic operators
 
-    friend inf operator+(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
+    friend inf operator+(const inf& lhs,
+                         const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf || rhs.isInf)
             return inf();
         return inf(lhs.value + rhs.value);
     }
 
-    friend inf operator-(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
+    friend inf operator-(const inf& lhs,
+                         const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf && rhs.isInf)
             throw std::logic_error("infinity minus infinity");
 
@@ -52,13 +49,15 @@ public:
         return inf(lhs.value - rhs.value);
     }
 
-    friend inf operator*(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
+    friend inf operator*(const inf& lhs,
+                         const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf || rhs.isInf)
             return inf();
         return inf(lhs.value * rhs.value);
     }
 
-    friend inf operator/(const inf& lhs, const inf& rhs) requires Arithmetic<T> {
+    friend inf operator/(const inf& lhs,
+                         const inf& rhs) requires Arithmetic<T> {
         if (lhs.isInf && rhs.isInf)
             throw std::logic_error("infinity divided by infinity");
 
@@ -95,7 +94,8 @@ public:
 
     // Comparison operators
 
-    friend bool operator==(const inf& lhs, const inf& rhs) requires std::equality_comparable<T> {
+    friend bool operator==(const inf& lhs, const inf& rhs) requires
+        std::equality_comparable<T> {
         if (lhs.isInf && rhs.isInf)
             return true;
         if (lhs.isInf || rhs.isInf)
@@ -107,7 +107,8 @@ public:
         return !(lhs == rhs);
     }
 
-    friend bool operator<(const inf& lhs, const inf& rhs) requires std::totally_ordered<T> {
+    friend bool operator<(const inf& lhs,
+                          const inf& rhs) requires std::totally_ordered<T> {
         if (lhs.isInf)
             return false;
         if (!lhs.isInf && rhs.isInf)
@@ -128,6 +129,7 @@ public:
     }
 
     // Other operators
+
     friend std::ostream& operator<<(std::ostream& os, const inf& obj) {
         if (obj.isInf)
             os << "inf";

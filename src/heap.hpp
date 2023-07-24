@@ -25,7 +25,7 @@ public:
     }
 
     T pop() {
-        if (data.size() == 0)
+        if (empty())
             throw std::runtime_error("Heap is empty");
 
         std::pop_heap(data.begin(), data.end(), Compare);
@@ -35,7 +35,7 @@ public:
     }
 
     T top() const {
-        if (data.size() == 0)
+        if (empty())
             throw std::runtime_error("Heap is empty");
 
         return data.front();
