@@ -35,10 +35,9 @@ int main(void) {
     meuGrafo.addEdge("Beraba", "Araguari", 40, true);
     meuGrafo.print();
 
-    cout << "\nChanging an element (doesn't change the vertex 'globally')\n";
-    meuGrafo.getEdgePtr("Brasilia", "Cuiaba")->first = "Belzonte";
+    cout << "\nChanging an element:\n";
+    meuGrafo.modifyVertex("Brasilia", "Belzonte");
+    meuGrafo.modifyEdgeWeight("Udia", "Belzonte", 531);
     meuGrafo.print();
-
-    cout << "\nIf you want to change all vertices easily, use a pointer as the "
-            "type T of the Graph\n";
+    cout << meuGrafo.contains("Brasilia") << '\n';
 }
