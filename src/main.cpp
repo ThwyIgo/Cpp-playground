@@ -40,4 +40,13 @@ int main(void) {
     meuGrafo.modifyEdgeWeight("Udia", "Belzonte", 531);
     meuGrafo.print();
     cout << meuGrafo.contains("Brasilia") << '\n';
+
+    cout << "Add 'city_' to every vertice\n";
+    for (auto& v : meuGrafo)
+        v = "city_" + v;
+
+    // Print vertices with a for-loop
+    for (auto v : meuGrafo)
+        cout << v << ", ";
+    cout << '\n';
 }

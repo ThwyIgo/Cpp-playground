@@ -21,12 +21,14 @@ template <std::equality_comparable T, typename W>  // Value, Weight
 class Graph {
     using Winf = inf<W>;
     using Vertex = std::shared_ptr<T>;
+    using vertsMap_t =
+        std::unordered_map<Vertex, std::forward_list<std::pair<Vertex, W>>>;
 
     // easy way to get vertexPtr in const functions
 #define vertexPtr(v) vertexPtr.find(v)->second
 
     // The only data attribute of this class
-    std::unordered_map<Vertex, std::forward_list<std::pair<Vertex, W>>> verts;
+    vertsMap_t verts;
 
   public:
     typedef std::pair<std::unordered_map<T, Winf>,
@@ -236,6 +238,37 @@ class Graph {
         }
     }
 #endif  // GRAPH_NO_IO
+
+    ///// Iterators /////
+
+    /* Simple for-loop iterator over vertices.
+       Elements aren't ordered here */
+    class iterator {
+        typename vertsMap_t::iterator it;
+
+        friend iterator Graph<T, W>::begin();
+        friend iterator Graph<T, W>::end();
+
+        iterator(auto it) : it(it) {}
+
+      public:
+        T& operator*() { return *it->first; }
+
+        iterator& operator++() {
+            ++it;
+            return *this;
+        }
+
+        bool operator!=(const iterator& other) { return it != other.it; }
+    };
+
+    iterator begin() {
+        return iterator(verts.begin());
+    }
+
+    iterator end() {
+        return iterator(verts.end());
+    }
 
   private:
     // Map to convert a T to a Vertex*
