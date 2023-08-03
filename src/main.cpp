@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
-#include "graph.hpp"
+#include "graphs.hpp"
 
 int main(void) {
     using namespace std;
     cout.setf(ios::boolalpha);
 
-    Graph<string, unsigned int> meuGrafo = {
+    WeightedDigraph<string, unsigned int> meuGrafo = {
         {"Udia",
          {{"Udia", 0},
           {"Araguari", 30},
@@ -33,6 +33,7 @@ int main(void) {
     cout << "\nRemoving Beraba from Udia and adding Araguari to Beraba\n";
     meuGrafo.removeEdge("Udia", "Beraba");
     meuGrafo.addEdge("Beraba", "Araguari", 40, true);
+    meuGrafo.addEdge("Beraba", "Pertinho");
     meuGrafo.print();
 
     cout << "\nChanging an element:\n";

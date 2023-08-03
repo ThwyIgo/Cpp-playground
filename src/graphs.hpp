@@ -14,11 +14,12 @@
 
 #include <forward_list>
 #include <unordered_map>
+#include "basic_graph.hpp"
 #include "heap.hpp"
 
 // Weighted directed generic graph
 template <std::equality_comparable T, typename W>  // Value, Weight
-class Graph {
+class WeightedDigraph : Graph<T> {
     using Winf = inf<W>;
     using Vertex = std::shared_ptr<T>;
     using vertsMap_t =
@@ -35,15 +36,16 @@ class Graph {
                       std::unordered_map<T, std::optional<T>>>
         dijkstra_t;
 
-    Graph() = default;
-    explicit Graph(std::size_t reserve) {
+    WeightedDigraph() = default;
+    explicit WeightedDigraph(std::size_t reserve) {
         verts.reserve(reserve);
     }
 
     // O(e) : e = edges
     // Doesn't check if edges are duplicated
-    constexpr Graph(std::initializer_list<
-                    std::pair<T, std::initializer_list<std::pair<T, W>>>> il) {
+    constexpr WeightedDigraph(
+        std::initializer_list<
+            std::pair<T, std::initializer_list<std::pair<T, W>>>> il) {
         for (auto [k, v] : il)
             for (auto [d, w] : v)
                 addEdge(k, d, w, true);
@@ -51,12 +53,12 @@ class Graph {
 
     // Number of vertices in the graph
     // O(1)
-    std::size_t size() const {
+    std::size_t size() const override {
         return verts.size();
     }
 
-    // O(v)
-    bool addVert(T vert) {
+    // O(1)
+    bool addVert(T vert) override {
         if (contains(vert))
             return false;
 
@@ -65,7 +67,7 @@ class Graph {
     }
 
     // O(e) : e = edges
-    bool removeVert(T vert) {
+    bool removeVert(T vert) override {
         if (!contains(vert))
             return false;
 
@@ -77,7 +79,7 @@ class Graph {
         return true;
     }
 
-    void modifyVertex(T vert, T newVert) {
+    void modifyVertex(T vert, T newVert) override {
         if (!contains(vert))
             throw std::runtime_error("Vertex not found");
         if (contains(newVert))
@@ -103,6 +105,10 @@ class Graph {
         return true;
     }
 
+    bool addEdge(T origin, T destination) override {
+        return addEdge(origin, destination, W());
+    }
+
     // Vertices are created automatically
     // O(1)
     bool addEdge(T origin,
@@ -119,7 +125,7 @@ class Graph {
     }
 
     // O(n) : n = origin's adjacent vertices
-    bool removeEdge(T origin, T destination) {
+    bool removeEdge(T origin, T destination) override {
         if (contains(origin) && contains(destination)) {
             std::erase_if(verts[vertexPtr[origin]], [&](auto edge) {
                 return edge.first == vertexPtr[destination];
@@ -144,13 +150,13 @@ class Graph {
 
     // Check if vertex is in the graph
     // O(1)
-    bool contains(T vert) const {
+    bool contains(T vert) const override {
         return vertexPtr.contains(vert);
     }
 
     // Check if edge is in the graph
     // O(e) : e = origin's adjacent vertices
-    bool contains(T origin, T destination) const {
+    bool contains(T origin, T destination) const override {
         if (!contains(origin) || !contains(destination))
             return false;
 
@@ -242,21 +248,27 @@ class Graph {
     ///// Iterators /////
 
     /* Simple for-loop iterator over vertices.
-       Elements aren't ordered here */
+       Elements aren't ordered here.
+       It should satisfy std::output_iterator<iterator, T> */
     class iterator {
         typename vertsMap_t::iterator it;
 
-        friend iterator Graph<T, W>::begin();
-        friend iterator Graph<T, W>::end();
-
-        iterator(auto it) : it(it) {}
-
       public:
+        using difference_type = typename vertsMap_t::iterator::difference_type;
+
+        iterator(const typename vertsMap_t::iterator& it) : it(std::move(it)) {}
+
         T& operator*() { return *it->first; }
 
         iterator& operator++() {
             ++it;
             return *this;
+        }
+
+        iterator operator++(int) {
+            iterator ret = *this;
+            operator++();
+            return ret;
         }
 
         bool operator!=(const iterator& other) { return it != other.it; }
