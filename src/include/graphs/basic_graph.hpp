@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 // Basic graph interface
 template <std::equality_comparable T>
 class Graph {

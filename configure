@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
-mkdir out
-cd out
-cmake ..
-cd ..
+set -e
+
+cmake -S . -B out -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ln -s ./out/compile_commands.json compile_commands.json
